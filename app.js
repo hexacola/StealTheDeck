@@ -1,5 +1,5 @@
 // Main Application Logic for StealTheDeck
-import { auth, db, realtimeDb, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, getDocs, serverTimestamp, increment, ref, set, onValue, off } from './firebase-config.js';
+import { auth, db, realtimeDb, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, getDocs, serverTimestamp, increment, ref, set, onValue, off, onDisconnect, runTransaction } from './firebase-config.js';
 
 // Game state
 let currentUser = null;
@@ -9,6 +9,8 @@ let userDeck = [];
 let currentMatch = null;
 let matchListener = null;
 let isPlayer1 = false;
+let onlineListener = null;
+let userPresenceRef = null;
 
 // Card data - basic cards pool
 const basicCards = [
@@ -88,14 +90,16 @@ function setupEventListeners() {
 
 // Check authentication state
 function checkAuthState() {
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
             isGuest = user.isAnonymous;
             loadUserData();
             showMainMenu();
-            setupOnlineListener();
+            await setupOnlineListener();
         } else {
+            // Remove online presence when user logs out
+            await removeOnlinePresence();
             currentUser = null;
             isGuest = false;
             showLogin();
@@ -220,12 +224,61 @@ function updateProfileDisplay() {
 }
 
 // Setup online players listener
-function setupOnlineListener() {
-    const onlineRef = ref(realtimeDb, 'online');
-    onValue(onlineRef, (snapshot) => {
-        const count = snapshot.val() || 0;
-        document.getElementById('onlineCount').textContent = count;
-    });
+async function setupOnlineListener() {
+    try {
+        // Set user as online in presence system
+        const userId = currentUser.uid;
+        userPresenceRef = ref(realtimeDb, `presence/${userId}`);
+        
+        // Set user online
+        await set(userPresenceRef, {
+            online: true,
+            lastSeen: Date.now()
+        });
+        
+        // Set up disconnect handler to remove user when they disconnect
+        onDisconnect(userPresenceRef).remove();
+        
+        // Listen to presence node to count online users
+        const presenceRef = ref(realtimeDb, 'presence');
+        onlineListener = onValue(presenceRef, (snapshot) => {
+            const presence = snapshot.val();
+            if (presence) {
+                // Count number of online users
+                const onlineUsers = Object.keys(presence).length;
+                document.getElementById('onlineCount').textContent = onlineUsers;
+            } else {
+                document.getElementById('onlineCount').textContent = '0';
+            }
+        }, (error) => {
+            console.error('Online listener error:', error);
+            document.getElementById('onlineCount').textContent = '?';
+        });
+        
+    } catch (error) {
+        console.error('Error setting up online listener:', error);
+        document.getElementById('onlineCount').textContent = '0';
+    }
+}
+
+// Remove user from online count
+async function removeOnlinePresence() {
+    try {
+        // Remove listeners first
+        if (onlineListener) {
+            off(ref(realtimeDb, 'presence'), 'value', onlineListener);
+            onlineListener = null;
+        }
+        
+        // Remove presence (this will automatically update the count via listener)
+        if (userPresenceRef) {
+            await set(userPresenceRef, null);
+        }
+        
+        userPresenceRef = null;
+    } catch (error) {
+        console.error('Error removing online presence:', error);
+    }
 }
 
 // Show screens
@@ -1060,6 +1113,7 @@ async function handleLogout() {
         if (matchListener) {
             matchListener();
         }
+        await removeOnlinePresence();
         await signOut(auth);
     } catch (error) {
         console.error('Logout error:', error);

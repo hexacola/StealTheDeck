@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, getDocs, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
-import { getDatabase, ref, set, onValue, off, serverTimestamp as rtServerTimestamp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, off, onDisconnect, serverTimestamp as rtServerTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -28,5 +28,5 @@ export { signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPa
 export { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, getDocs, serverTimestamp, increment };
 
 // Export Realtime Database functions
-export { ref, set, onValue, off, rtServerTimestamp };
+export { ref, set, onValue, off, onDisconnect, rtServerTimestamp, runTransaction };
 
