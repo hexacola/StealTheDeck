@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StealTheDeck - 1v1 Card Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h1 class="game-title">StealTheDeck</h1>
+            <div class="login-options">
+                <button id="guestLoginBtn" class="btn btn-secondary">Play as Guest</button>
+                <button id="emailLoginBtn" class="btn btn-primary">Login with Email</button>
+                <button id="googleLoginBtn" class="btn btn-primary">Login with Google</button>
+            </div>
+            <div id="emailLoginForm" class="login-form" style="display: none;">
+                <input type="email" id="emailInput" placeholder="Email">
+                <input type="password" id="passwordInput" placeholder="Password">
+                <button id="signInBtn" class="btn btn-primary">Sign In</button>
+                <button id="signUpBtn" class="btn btn-secondary">Sign Up</button>
+                <button id="cancelEmailBtn" class="btn btn-cancel">Cancel</button>
+            </div>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Main Menu Screen -->
+    <div id="mainMenuScreen" class="screen">
+        <div class="main-menu-container">
+            <div class="profile-panel">
+                <div class="avatar-placeholder" id="avatarDisplay"></div>
+                <div class="profile-info">
+                    <div class="username" id="usernameDisplay">Demo Player</div>
+                    <div class="rank" id="rankDisplay">Rank 1</div>
+                    <div class="level" id="levelDisplay">Level 1</div>
+                    <div class="currency">
+                        <span class="gold-icon">💰</span>
+                        <span id="currencyDisplay">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-buttons">
+                <button id="casualBtn" class="menu-btn">Casual</button>
+                <button id="rankedBtn" class="menu-btn">Ranked</button>
+                <button id="deckBtn" class="menu-btn">Card Deck</button>
+                <button id="shopBtn" class="menu-btn">Shop</button>
+                <button id="settingsBtn" class="menu-btn">Settings</button>
+            </div>
+
+            <div class="online-counter">
+                <span id="onlineCount">0</span> players online
+            </div>
+
+            <button id="logoutBtn" class="btn btn-cancel">Logout</button>
+        </div>
+    </div>
+
+    <!-- Deck Builder Screen -->
+    <div id="deckBuilderScreen" class="screen">
+        <div class="deck-builder-container">
+            <h2>Deck Builder</h2>
+            <div class="deck-section">
+                <h3>Your Deck (<span id="deckCount">0</span>/16)</h3>
+                <div class="deck-slots" id="deckSlots">
+                    <!-- 16 deck slots will be created here -->
+                </div>
+            </div>
+            <div class="collection-section">
+                <h3>Collection</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="common">Common</button>
+                    <button class="filter-btn" data-filter="rare">Rare</button>
+                    <button class="filter-btn" data-filter="epic">Epic</button>
+                    <button class="filter-btn" data-filter="legendary">Legendary</button>
+                </div>
+                <div class="collection-grid" id="collectionGrid">
+                    <!-- Collection cards will be rendered here -->
+                </div>
+            </div>
+            <button id="saveDeckBtn" class="btn btn-primary">Save Deck</button>
+            <button id="backToMenuBtn" class="btn btn-secondary">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Match Screen -->
+    <div id="matchScreen" class="screen">
+        <div class="match-container">
+            <div class="opponent-area">
+                <div class="opponent-info">
+                    <span id="opponentName">Opponent</span>
+                    <span class="hp-display">HP: <span id="opponentHP">0</span></span>
+                </div>
+                <div class="board-row" id="opponentBoard">
+                    <!-- Opponent cards will be rendered here -->
+                </div>
+            </div>
+
+            <div class="vs-divider">VS</div>
+
+            <div class="player-area">
+                <div class="player-info">
+                    <span id="playerName">Player</span>
+                    <span class="hp-display">HP: <span id="playerHP">0</span></span>
+                </div>
+                <div class="board-row" id="playerBoard">
+                    <!-- Player cards will be rendered here -->
+                </div>
+            </div>
+
+            <div class="match-controls">
+                <button id="firstDrawBtn" class="btn btn-primary" style="display: none;">First Draw</button>
+                <button id="endTurnBtn" class="btn btn-primary" style="display: none;">End Turn</button>
+                <div class="turn-indicator" id="turnIndicator"></div>
+            </div>
+
+            <div class="hand-display" id="handDisplay">
+                <!-- Player's hand will be shown here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Screen -->
+    <div id="shopScreen" class="screen">
+        <div class="shop-container">
+            <h2>Shop</h2>
+            <div class="loot-cases">
+                <div class="loot-case">
+                    <h3>Common Loot Box</h3>
+                    <div class="case-preview common">📦</div>
+                    <p>Contains 3 cards</p>
+                    <p class="rarity-chance">Common: 80% | Rare: 15% | Epic: 5%</p>
+                    <button class="btn btn-primary" onclick="openLootCase('common', 100)">Open (100 Gold)</button>
+                </div>
+                <div class="loot-case">
+                    <h3>Rare Loot Box</h3>
+                    <div class="case-preview rare">📦</div>
+                    <p>Contains 3 cards</p>
+                    <p class="rarity-chance">Common: 50% | Rare: 35% | Epic: 12% | Legendary: 3%</p>
+                    <button class="btn btn-primary" onclick="openLootCase('rare', 250)">Open (250 Gold)</button>
+                </div>
+                <div class="loot-case">
+                    <h3>Epic Loot Box</h3>
+                    <div class="case-preview epic">📦</div>
+                    <p>Contains 5 cards</p>
+                    <p class="rarity-chance">Common: 30% | Rare: 40% | Epic: 25% | Legendary: 5%</p>
+                    <button class="btn btn-primary" onclick="openLootCase('epic', 500)">Open (500 Gold)</button>
+                </div>
+            </div>
+            <button id="backFromShopBtn" class="btn btn-secondary">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen" class="screen">
+        <div class="settings-container">
+            <h2>Settings</h2>
+            <div class="setting-item">
+                <label>Sound Effects</label>
+                <input type="checkbox" id="soundEnabled" checked>
+            </div>
+            <div class="setting-item">
+                <label>Music</label>
+                <input type="checkbox" id="musicEnabled" checked>
+            </div>
+            <div class="setting-item">
+                <label>UI Scale</label>
+                <input type="range" id="uiScale" min="80" max="120" value="100">
+                <span id="scaleValue">100%</span>
+            </div>
+            <div class="setting-item">
+                <label>Notifications</label>
+                <input type="checkbox" id="notificationsEnabled" checked>
+            </div>
+            <button id="backFromSettingsBtn" class="btn btn-secondary">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- End Match Modal -->
+    <div id="endMatchModal" class="modal">
+        <div class="modal-content">
+            <h2 id="endMatchTitle">Match Ended</h2>
+            <div id="endMatchContent"></div>
+            <button id="continueFromMatchBtn" class="btn btn-primary">Continue</button>
+        </div>
+    </div>
+
+    <!-- Ranked Warning Modal -->
+    <div id="rankedWarningModal" class="modal">
+        <div class="modal-content">
+            <h2>Ranked Match Warning</h2>
+            <p>Playing Ranked may permanently lose a card outside your basic deck.</p>
+            <p>Are you sure you want to continue?</p>
+            <button id="confirmRankedBtn" class="btn btn-primary">Yes, Continue</button>
+            <button id="cancelRankedBtn" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
